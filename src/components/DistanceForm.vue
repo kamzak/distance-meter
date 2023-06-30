@@ -1,10 +1,5 @@
 <template>
   <div id="calc-wrapper">
-    <div id="video-wrapper">
-      <video autoplay loop muted>
-        <source src="../assets/globe.mp4" type="video/mp4" />
-      </video>
-    </div>
     <div id="form-wrapper">
       <h1>Odległość geograficzna</h1>
       <form @submit.prevent="submitForm">
@@ -70,15 +65,53 @@
 </template>
 
 <script>
+import { inject, watch, ref, provide } from "vue";
+
 export default {
   name: "DistanceForm",
-  data() {
+  setup() {
+    const coordinates = inject("coordinates", () => {});
+    const currPos = inject("currPos", () => {});
+    const otherPos = inject("otherPos", () => {});
+
+    const latitude1 = ref(coordinates.value.lat);
+    const longitude1 = ref(coordinates.value.lng);
+    const latitude2 = ref(0);
+    const longitude2 = ref(0);
+    const units = inject('units', () => {});
+
+    watch(currPos, (newVal) => {
+      if (newVal) {
+        latitude1.value = newVal.lat;
+        longitude1.value = newVal.lng;
+      }
+    });
+
+    watch(otherPos, (newVal) => {
+      if (newVal) {
+        latitude2.value = parseFloat(newVal.lat);
+        longitude2.value = parseFloat(newVal.lng);
+      }
+    });
+
+    const submitForm = () => {
+      // Emit event with current values
+      this.$emit("calculate-distance", {
+        latitude1: latitude1.value,
+        longitude1: longitude1.value,
+        latitude2: latitude2.value,
+        longitude2: longitude2.value,
+        units: units.value,
+      });
+    };
+
     return {
-      latitude1: null,
-      longitude1: null,
-      latitude2: null,
-      longitude2: null,
-      units: "meters",
+      latitude1,
+      longitude1,
+      latitude2,
+      longitude2,
+      units,
+      submitForm,
     };
   },
   methods: {
@@ -100,70 +133,56 @@ export default {
 #calc-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 0;
-}
-
-#video-wrapper {
-  margin-top: 1rem;
-  display: flex;
-  flex-direction: column;
   width: 100%;
   box-sizing: border-box;
-  max-width: 500px;
+  max-width: 400px;
   background-color: rgb(8, 28, 44);
-  border: 1px solid #ffffff7f;
+  border-top: none;
+  border-left: 1px solid #ffffff7f;
 }
 
 #form-wrapper {
   display: flex;
   flex-direction: column;
-  padding: 1rem;
+  padding: 0 2rem;
   width: 100%;
   box-sizing: border-box;
-  max-width: 500px;
-  background-color: rgb(8, 28, 44);
-  border: 1px solid #ffffff7f;
   border-top: none;
 }
 
-video {
-  width: 100%;
-  height: auto;
-}
-
 h1 {
-  color: #ffffff;
+  margin-bottom: 2rem;
 }
 
 form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 2rem;
 }
 
-div {
+form > div {
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 1rem;
 }
 
 input {
-  width: 200px;
+  width: 150px;
   height: 1.5rem;
   font-size: 1rem;
 }
 
 label {
   text-align: right;
-  width: 200px;
+  width: 175px;
 }
 
 select {
   height: 1.85rem;
   font-size: 1rem;
-  width: 208px;
+  width: 172px;
 }
 
 button {
@@ -180,7 +199,13 @@ button {
   margin-top: 2rem;
 }
 
-@media (max-width: 600px) {
+@media screen and (max-width: 1200px) {
+  #calc-wrapper {
+    max-width: 100%;
+  }
+}
+
+@media screen and (max-width: 600px) {
   form div {
     flex-direction: column;
     justify-content: center;
