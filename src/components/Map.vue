@@ -199,6 +199,14 @@ export default {
   font-size: 1.2rem;
 }
 
+@media screen and (max-width: 600px) {
+  #map-cords {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+}
+
 @media screen and (max-width: 1200px) {
   #map-wrapper {
     max-width: 100%;
