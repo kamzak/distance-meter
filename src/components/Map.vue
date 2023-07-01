@@ -15,7 +15,8 @@
         <h1>Wybrane współrzędne:</h1>
 
         <p v-if="!otherPos" id="no-other-cords">
-          Wybierz współrzędne geograficzne klikając na mapę lub wpisz koordynaty w formularzu
+          Wybierz współrzędne geograficzne klikając na mapę lub wpisz koordynaty
+          w formularzu
         </p>
         <p v-if="otherPos">
           Szerokość geograficzna:
@@ -33,14 +34,7 @@
 </template>
 
 <script>
-import {
-  onMounted,
-  inject,
-  ref,
-  onUnmounted,
-  computed,
-  watch,
-} from "vue";
+import { onMounted, inject, ref, onUnmounted, computed, watch } from "vue";
 import { Loader } from "@googlemaps/js-api-loader";
 
 export default {
@@ -53,6 +47,7 @@ export default {
     }));
     const otherPos = inject("otherPos", () => {});
     const units = inject("units", () => {});
+    const locationLoaded = inject("locationLoaded", () => {});
 
     const apiKey = process.env.VUE_APP_GOOGLE_MAPS_API_KEY;
     const loader = new Loader({
@@ -67,7 +62,7 @@ export default {
       await loader.load();
       map.value = new google.maps.Map(mapDiv.value, {
         center:
-          coordinates.value !== { lat: 0, lng: 0 }
+          coordinates.value.lat !== 0 && coordinates.value.lng !== 0
             ? coordinates.value
             : currPos.value,
         zoom: 15,
@@ -112,6 +107,15 @@ export default {
       () => units.value,
       (newVal) => {
         console.log("Units updated:", newVal);
+      }
+    );
+
+    watch(
+      () => locationLoaded.value,
+      (newVal) => {
+        if (newVal && map.value) {
+          map.value.setCenter(currPos.value);
+        }
       }
     );
 

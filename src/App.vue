@@ -28,6 +28,7 @@ export default {
     DistanceResult,
   },
   setup() {
+    const locationLoaded = ref(false);
     const loading = ref(false);
     const coordinates = ref({ lat: 0, lng: 0 });
     const currPos = computed(() => ({
@@ -35,12 +36,13 @@ export default {
       lng: coordinates.value.lng,
     }));
     const otherPos = ref(null);
+    const units = ref("meters");
 
-    const units = ref("meters"); // or whatever your default unit is
     provide("units", units);
     provide("coordinates", coordinates);
     provide("currPos", currPos);
     provide("otherPos", otherPos);
+    provide("locationLoaded", locationLoaded);
 
     onMounted(() => {
       if (navigator.geolocation) {
@@ -48,6 +50,7 @@ export default {
           (position) => {
             coordinates.value.lat = parseFloat(position.coords.latitude);
             coordinates.value.lng = parseFloat(position.coords.longitude);
+            locationLoaded.value = true;
             loading.value = false;
           },
           (error) => {
